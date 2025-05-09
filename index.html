@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>合盛钮扣VIP计价工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none; /* 确保canvas不拦截点击事件 */
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 90vw;
+            box-sizing: content-box;
+            position: relative;
+            z-index: 10; /* 确保内容在canvas之上 */
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin: 0 0 20px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 8px;
+            vertical-align: middle;
+        }
+        label {
+            color: #34495e;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+            -webkit-appearance: menulist;
+            -moz-appearance: menulist;
+            appearance: menulist;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: #95a5a6;
+            outline: none;
+        }
+        .tip {
+            color: #7f8c8d;
+            font-size: 11px;
+            margin-top: 4px;
+            display: block;
+            pointer-events: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: linear-gradient(to right, #bdc3c7, #95a5a6);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:active {
+            background: linear-gradient(to right, #95a5a6, #7f8c8d);
+        }
+        #result {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #ecf0f1;
+        }
+        #result table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        #result th, #result td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+            font-size: 13px;
+        }
+        #result th {
+            background-color: #f1f1f1;
+            font-weight: 600;
+        }
+        #result .total {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        #result .note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #34495e;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="container">
+        <h2>合盛钮扣VIP计价工具</h2>
+        <table>
+            <tr>
+                <td><label>尺寸类型：</label></td>
+                <td>
+                    <select id="sizeType" required>
+                        <option value="">请选择尺寸类型</option>
+                        <option value="tube">管子</option>
+                        <option value="punch">冲刀</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>钮扣尺寸（管子&冲刀）：</label></td>
+                <td>
+                    <select id="buttonSize">
+                        <option value="">请选择钮扣尺寸</option>
+                        <option value="12L">12L</option>
+                        <option value="13L">13L</option>
+                        <option value="14L">14L</option>
+                        <option value="15L">15L</option>
+                        <option value="16L">16L</option>
+                        <option value="17L">17L</option>
+                        <option value="18L">18L</option>
+                        <option value="19L">19L</option>
+                        <option value="20L">20L</option>
+                        <option value="22L">22L</option>
+                        <option value="24L">24L</option>
+                        <option value="26L">26L</option>
+                        <option value="27L">27L</option>
+                        <option value="28L">28L</option>
+                        <option value="30L">30L</option>
+                        <option value="32L">32L</option>
+                        <option value="34L">34L</option>
+                        <option value="36L">36L</option>
+                        <option value="38L">38L</option>
+                        <option value="40L">40L</option>
+                        <option value="42L">42L</option>
+                        <option value="44L">44L</option>
+                        <option value="46L">46L</option>
+                        <option value="48L">48L</option>
+                        <option value="50L">50L</option>
+                        <option value="54L">54L</option>
+                        <option value="60L">60L</option>
+                        <option value="64L">64L</option>
+                        <option value="70L">70L</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>钮扣类型：</label></td>
+                <td>
+                    <select id="type" required>
+                        <option value="">请选择类型</option>
+                        <option value="磁钮">磁钮</option>
+                        <option value="月光">月光</option>
+                        <option value="珠光">珠光</option>
+                        <option value="混色&散花">混色&散花</option>
+                        <option value="彩虹钮">彩虹钮</option>
+                        <option value="棍花钮">棍花钮</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>数量（G）：</label></td>
+                <td>
+                    <input type="number" id="quantity" min="1" required>
+                </td>
+            </tr>
+            <tr>
+                <td><label>成品厚度（mm）：</label></td>
+                <td>
+                    <select id="thickness" required>
+                        <option value="">请选择厚度</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>镭射选项：</label></td>
+                <td>
+                    <select id="laserOption">
+                        <option value="none">不需要镭射</option>
+                        <option value="surfaceLetter">射面字母</option>
+                        <option value="sideEdge">侧边镭射</option>
+                    </select>
+                    <span class="tip">镭射精工，铸就非凡细节</span>
+                </td>
+            </tr>
+            <tr>
+                <td><label>斜车选项：</label></td>
+                <td>
+                    <select id="obliqueOption">
+                        <option value="no">不需要斜车</option>
+                        <option value="yes">需要斜车</option>
+                    </select>
+                    <span class="tip">斜车工艺可提升钮扣质感（选择斜车费用增加30%-80%，视尺寸而定）</span>
+                </td>
+            </tr>
+            <tr>
+                <td><label>泡油选项：</label></td>
+                <td>
+                    <select id="oilOption">
+                        <option value="no">不需要泡油</option>
+                        <option value="yes">需要泡油</option>
+                    </select>
+                    <span class="tip">泡油增强光泽，成本增5%</span>
+                </td>
+            </tr>
+        </table>
+        <button onclick="calculatePrice()">计算总价</button>
+        <div id="result"></div>
+    </div>
+
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+
+                    // Convert sheet to JSON to filter blank rows
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                    // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                      row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    // Fallback
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                      headerRowIndex = 0;
+                    }
+
+                    // Convert filtered JSON back to CSV
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+    </script>
+
+    <script>
+        const buttonData = {
+            '12L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '13L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '14L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '15L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '16L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '17L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '18L': { standardThickness: 2.4, types: { '磁钮': 2.75, '月光': 2.97, '珠光': 2.97, '混色&散花': 3.52, '彩虹钮': 4.4, '棍花钮': 3.74 }, obliquePriceRatio: 1.3, laserSurfaceLetter: 3.5, laserSideEdge: 3.5 },
+            '19L': { standardThickness: 2.6, types: { '磁钮': 3.3, '月光': 3.52, '珠光': 3.52, '混色&散花': 4.18, '彩虹钮': 6.05, '棍花钮': 4.51 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 3.5, laserSideEdge: 4.5 },
+            '20L': { standardThickness: 2.6, types: { '磁钮': 3.3, '月光': 3.52, '珠光': 3.52, '混色&散花': 4.18, '彩虹钮': 6.05, '棍花钮': 4.51 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 3.5, laserSideEdge: 4.5 },
+            '22L': { standardThickness: 2.8, types: { '磁钮': 4.4, '月光': 4.84, '珠光': 4.95, '混色&散花': 4.95, '彩虹钮': 7.48, '棍花钮': 5.5 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 3.5, laserSideEdge: 4.5 },
+            '24L': { standardThickness: 3.0, types: { '磁钮': 5.06, '月光': 5.5, '珠光': 5.72, '混色&散花': 5.72, '彩虹钮': 8.25, '棍花钮': 6.49 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 4, laserSideEdge: 4.5 },
+            '26L': { standardThickness: 3.1, types: { '磁钮': 5.83, '月光': 6.38, '珠光': 7.48, '混色&散花': 7.48, '彩虹钮': 9.35, '棍花钮': 8.03 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 4, laserSideEdge: 4.5 },
+            '27L': { standardThickness: 3.1, types: { '磁钮': 6.6, '月光': 9.9, '珠光': 10.95, '混色&散花': 10.45, '彩虹钮': 9.02, '棍花钮': 9.02 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 4, laserSideEdge: 4.5 },
+            '28L': { standardThickness: 3.2, types: { '磁钮': 7.48, '月光': 8.25, '珠光': 9.13, '混色&散花': 9.13, '彩虹钮': 12.1, '棍花钮': 10.01 }, obliquePriceRatio: 1.4, laserSurfaceLetter: 4.5, laserSideEdge: 5.0 },
+            '30L': { standardThickness: 3.3, types: { '磁钮': 8.25, '月光': 9.02, '珠光': 10.45, '混色&散花': 10.45, '彩虹钮': 13.2, '棍花钮': 11.0 }, obliquePriceRatio: 1.5, laserSurfaceLetter: 6, laserSideEdge: 6.5 },
+            '32L': { standardThickness: 3.5, types: { '磁钮': 9.35, '月光': 10.45, '珠光': 11.88, '混色&散花': 11.88, '彩虹钮': 15.6, '棍花钮': 13.2 }, obliquePriceRatio: 1.5, laserSurfaceLetter: 7, laserSideEdge: 8.5 },
+            '34L': { standardThickness: 3.6, types: { '磁钮': 11.55, '月光': 12.65, '珠光': 13.75, '混色&散花': 13.75, '彩虹钮': 17.25, '棍花钮': 16.5 }, obliquePriceRatio: 1.5, laserSurfaceLetter: 8.5, laserSideEdge: 10.0 },
+            '36L': { standardThickness: 3.8, types: { '磁钮': 13.2, '月光': 14.3, '珠光': 15.95, '混色&散花': 15.95, '彩虹钮': 24.2, '棍花钮': 17.6 }, obliquePriceRatio: 1.5, laserSurfaceLetter: 10.5, laserSideEdge: 14.0 },
+            '38L': { standardThickness: 4.0, types: { '磁钮': 18.15, '月光': 19.8, '珠光': 20.9, '混色&散花': 20.9, '彩虹钮': 33.0, '棍花钮': 20.9 }, obliquePriceRatio: 1.5, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '40L': { standardThickness: 4.2, types: { '磁钮': 19.8, '月光': 21.45, '珠光': 22.0, '混色&散花': 22.0, '彩虹钮': 35.2, '棍花钮': 22.11 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '42L': { standardThickness: 4.2, types: { '磁钮': 22.0, '月光': 25.3, '珠光': 26.4, '混色&散花': 26.4, '彩虹钮': 44.0, '棍花钮': 28.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '44L': { standardThickness: 4.5, types: { '磁钮': 26.4, '月光': 28.6, '珠光': 30.8, '混色&散花': 30.8, '彩虹钮': 50.6, '棍花钮': 35.2 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '46L': { standardThickness: 4.8, types: { '磁钮': 30.8, '月光': 33.0, '珠光': 36.3, '混色&散花': 36.3, '彩虹钮': 56.1, '棍花钮': 41.8 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '48L': { standardThickness: 4.8, types: { '磁钮': 30.8, '月光': 33.0, '珠光': 36.3, '混色&散花': 36.3, '彩虹钮': 56.1, '棍花钮': 41.8 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '50L': { standardThickness: 4.8, types: { '磁钮': 39.6, '月光': 44.0, '珠光': 44.0, '混色&散花': 44.0, '彩虹钮': 60.5, '棍花钮': 50.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 14.0, laserSideEdge: 22.0 },
+            '54L': { standardThickness: 5.4, types: { '磁钮': 49.5, '月光': 55.0, '珠光': 55.0, '混色&散花': 55.0, '彩虹钮': 68.2, '棍花钮': 61.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 28.0, laserSideEdge: 28.0 },
+            '60L': { standardThickness: 5.4, types: { '磁钮': 49.5, '月光': 55.0, '珠光': 55.0, '混色&散花': 55.0, '彩虹钮': 68.2, '棍花钮': 61.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 28.0, laserSideEdge: 28.0 },
+            '64L': { standardThickness: 5.4, types: { '磁钮': 49.5, '月光': 55.0, '珠光': 55.0, '混色&散花': 55.0, '彩虹钮': 68.2, '棍花钮': 61.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 28.0, laserSideEdge: 28.0 },
+            '70L': { standardThickness: 5.4, types: { '磁钮': 49.5, '月光': 55.0, '珠光': 55.0, '混色&散花': 55.0, '彩虹钮': 68.2, '棍花钮': 61.6 }, obliquePriceRatio: 1.8, laserSurfaceLetter: 28.0, laserSideEdge: 28.0 }
+        };
+
+        const punchBlankQuantityData = {
+            '12L': 195,
+            '13L': 150,
+            '14L': 127,
+            '15L': 106,
+            '16L': 95,
+            '17L': 85,
+            '18L': 80,
+            '19L': 69,
+            '20L': 64,
+            '22L': 53,
+            '24L': 44.4,
+            '26L': 38,
+            '27L': 36,
+            '28L': 34,
+            '30L': 28,
+            '32L': 25,
+            '34L': 23,
+            '36L': 20,
+            '38L': 18,
+            '40L': 16,
+            '42L': 14.5,
+            '44L': 13,
+            '48L': 11,
+            '54L': 8.5,
+            '60L': 7.5
+        };
+
+        const blankGlueUsageData = {
+            '2.1': { '平桶': 4.0, '月光': 5.1, '珠光': 4.1 },
+            '2.2': { '平桶': 4.2, '月光': 5.3, '珠光': 4.3 },
+            '2.3': { '平桶': 4.4, '月光': 5.5, '珠光': 4.5 },
+            '2.4': { '平桶': 4.6, '月光': 5.7, '珠光': 4.7 },
+            '2.5': { '平桶': 4.8, '月光': 5.9, '珠光': 4.9 },
+            '2.6': { '平桶': 5.0, '月光': 6.1, '珠光': 5.1 },
+            '2.7': { '平桶': 5.2, '月光': 6.3, '珠光': 5.3 },
+            '2.8': { '平桶': 5.3, '月光': 6.4, '珠光': 5.4 },
+            '2.9': { '平桶': 5.5, '月光': 6.6, '珠光': 5.6 },
+            '3.0': { '平桶': 5.7, '月光': 6.8, '珠光': 5.8 },
+            '3.1': { '平桶': 5.9, '月光': 7.0, '珠光': 6.0 },
+            '3.2': { '平桶': 6.1, '月光': 7.2, '珠光': 6.2 },
+            '3.3': { '平桶': 6.2, '月光': 7.3, '珠光': 6.3 },
+            '3.4': { '平桶': 6.4, '月光': 7.5, '珠光': 6.5 },
+            '3.5': { '平桶': 6.6, '月光': 7.7, '珠光': 6.7 },
+            '3.6': { '平桶': 6.8, '月光': 7.9, '珠光': 6.9 },
+            '3.7': { '平桶': 7.0, '月光': 8.1, '珠光': 7.1 },
+            '3.8': { '平桶': 7.2, '月光': 8.3, '珠光': 7.3 },
+            '3.9': { '平桶': 7.4, '月光': 8.5, '珠光': 7.5 },
+            '4.0': { '平桶': 7.6, '月光': 8.7, '珠光': 7.7 },
+            '4.1': { '平桶': 7.7, '月光': 8.8, '珠光': 7.8 },
+            '4.2': { '平桶': 7.9, '月光': 9.0, '珠光': 8.0 },
+            '4.3': { '平桶': 8.1, '月光': 9.2, '珠光': 8.2 },
+            '4.4': { '平桶': 8.3, '月光': 9.4, '珠光': 8.4 },
+            '4.5': { '平桶': 8.5, '月光': 9.6, '珠光': 8.6 },
+            '4.6': { '平桶': 8.7, '月光': 9.8, '珠光': 8.8 }
+        };
+
+        const thicknessOptions = [2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.5, 3.6, 3.8, 4.0, 4.2, 4.5, 4.8, 5.4];
+
+        function updateThicknessOptions() {
+            const buttonSize = document.getElementById('buttonSize').value;
+            const thicknessSelect = document.getElementById('thickness');
+
+            thicknessSelect.innerHTML = '<option value="">请选择厚度</option>';
+
+            if (buttonSize && buttonData[buttonSize]) {
+                const standardThickness = buttonData[buttonSize].standardThickness;
+                thicknessOptions.forEach(thickness => {
+                    const label = thickness === standardThickness ? `${thickness}mm (标准)` : `${thickness}mm`;
+                    const option = document.createElement('option');
+                    option.value = thickness;
+                    option.text = label;
+                    thicknessSelect.appendChild(option);
+                });
+            } else {
+                thicknessOptions.forEach(thickness => {
+                    const option = document.createElement('option');
+                    option.value = thickness;
+                    option.text = `${thickness}mm`;
+                    thicknessSelect.appendChild(option);
+                });
+            }
+        }
+
+        function calculatePrice() {
+            const sizeType = document.getElementById('sizeType').value;
+            const buttonSize = document.getElementById('buttonSize').value;
+            const type = document.getElementById('type').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const thickness = parseFloat(document.getElementById('thickness').value);
+            const laserOption = document.getElementById('laserOption').value;
+            const obliqueOption = document.getElementById('obliqueOption').value;
+            const oilOption = document.getElementById('oilOption').value;
+
+            const resultDiv = document.getElementById('result');
+            if (!sizeType || !buttonSize || !type || !quantity || !thickness) {
+                resultDiv.innerHTML = '请填写所有必填项';
+                resultDiv.style.color = '#e74c3c';
+                return;
+            }
+
+            const data = buttonData[buttonSize];
+            let basePrice = data.types[type];
+            const originalBasePrice = basePrice;
+
+            let thicknessAdjustedPrice = basePrice;
+            if (thickness > data.standardThickness) {
+                thicknessAdjustedPrice = (thickness * basePrice / data.standardThickness);
+            }
+
+            let obliqueCost = 0;
+            let afterObliquePrice = thicknessAdjustedPrice;
+            if (obliqueOption === 'yes') {
+                afterObliquePrice = thicknessAdjustedPrice * data.obliquePriceRatio;
+                obliqueCost = afterObliquePrice - thicknessAdjustedPrice;
+            }
+
+            let laserCost = 0;
+            if (laserOption === 'surfaceLetter') {
+                laserCost = data.laserSurfaceLetter;
+            } else if (laserOption === 'sideEdge') {
+                laserCost = data.laserSideEdge;
+            }
+
+            let unitPrice = afterObliquePrice + laserCost;
+            let oilCost = 0;
+            if (oilOption === 'yes') {
+                oilCost = unitPrice * 0.05;
+                unitPrice *= 1.05;
+            }
+
+            const totalPrice = unitPrice * quantity;
+
+            // Calculate Punch Blank Quantity only if sizeType is 'punch' and data exists
+            let punchBlankRow = '';
+            let totalBlanks = 0;
+            if (sizeType === 'punch' && buttonSize && punchBlankQuantityData[buttonSize]) {
+                const blankQuantityPerSheet = punchBlankQuantityData[buttonSize];
+                totalBlanks = blankQuantityPerSheet * quantity;
+                punchBlankRow = `<tr><td>冲刀出胚数量</td><td>${blankQuantityPerSheet.toFixed(1)} G/片 x ${quantity} G = ${totalBlanks.toFixed(1)} G</td></tr>`;
+            }
+
+            // Calculate Blank Glue Usage based on thickness and type
+            let glueUsageRow = '';
+            const thicknessKey = thickness.toFixed(1);
+            let glueCategory = '';
+            if (type === '磁钮' || type === '混色&散花' || type === '棍花钮') {
+                glueCategory = '平桶';
+            } else if (type === '月光' || type === '彩虹钮') {
+                glueCategory = '月光';
+            } else if (type === '珠光') {
+                glueCategory = '珠光';
+            }
+
+            if (blankGlueUsageData[thicknessKey] && glueCategory) {
+                const gluePerBlank = blankGlueUsageData[thicknessKey][glueCategory];
+                if (sizeType === 'punch' && buttonSize && punchBlankQuantityData[buttonSize]) {
+                    const totalGlue = gluePerBlank * totalBlanks;
+                    glueUsageRow = `<tr><td>片胚胶浆用量</td><td>${gluePerBlank.toFixed(1)} KG/G x ${totalBlanks.toFixed(1)} G = ${totalGlue.toFixed(2)} KG</td></tr>`;
+                } else {
+                    glueUsageRow = `<tr><td>片胚胶浆用量</td><td>${gluePerBlank.toFixed(1)} KG/G (尺寸类型非冲刀或无数据，无法计算总量)</td></tr>`;
+                }
+            } else {
+                glueUsageRow = `<tr><td>片胚胶浆用量</td><td>无匹配数据</td></tr>`;
+            }
+
+            const sizeTypeLabel = sizeType === 'tube' ? '管子' : '冲刀';
+
+            resultDiv.innerHTML = `
+                <div>合盛辅料Cosun Trimmings为您报价-</div>
+                <div>计算明细 Itemized Calculation：</div>
+                <table>
+                    <tr><th>项目</th><th>金额</th></tr>
+                    <tr><td>尺寸类型</td><td>${sizeTypeLabel}</td></tr>
+                    <tr><td>钮扣尺寸</td><td>${buttonSize}</td></tr>
+                    <tr><td>基础单价（${type}）</td><td>${originalBasePrice.toFixed(2)} 元/G</td></tr>
+                    <tr><td>厚度调整（${thickness}mm vs 标准 ${data.standardThickness}mm）</td><td>${thicknessAdjustedPrice.toFixed(2)} 元/G</td></tr>
+                    <tr><td>斜车加价</td><td>${obliqueCost ? obliqueCost.toFixed(2) + ' 元/G (增加' + ((data.obliquePriceRatio - 1) * 100).toFixed(0) + '%)' : '无'}</td></tr>
+                    <tr><td>镭射加价</td><td>${laserCost ? laserCost.toFixed(2) + ' 元/G' : '无'}</td></tr>
+                    <tr><td>泡油加价（5%）</td><td>${oilCost ? oilCost.toFixed(2) + ' 元/G' : '无'}</td></tr>
+                    <tr><td>最终单价</td><td>${unitPrice.toFixed(2)} 元/G</td></tr>
+                    ${punchBlankRow}
+                    ${glueUsageRow}
+                    <tr class="total"><td>总价（${quantity}G）</td><td>${totalPrice.toFixed(2)} 元</td></tr>
+                </table>
+                <div class="note">
+                    尊敬的客户：<br>
+                    您好！感谢您对我们的关注与支持。在此温馨提示，线上所展示的所有价格明细为系统估算，仅供参考，如有任何疑问或需要进一步确认具体报价，请随时与您的专属客服联系。感谢您的理解与配合！祝商祺！
+                </div>
+            `;
+            resultDiv.style.color = '#2c3e50';
+        }
+
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 100;
+
+            function Particle() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            Particle.prototype.update = function () {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            };
+
+            Particle.prototype.draw = function () {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+            };
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                    particles.forEach(p2 => {
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.strokeStyle = 'rgba(0, 0, 0, ' + (1 - dist / 100) + ')';
+                            ctx.stroke();
+                        }
+                    });
+                });
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        window.onload = function () {
+            initParticles();
+            updateThicknessOptions();
+            const buttonSize = document.getElementById('buttonSize');
+            buttonSize.addEventListener('change', updateThicknessOptions);
+        };
+    </script>
+</body>
+</html>
